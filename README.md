@@ -4,7 +4,7 @@ A small Angular application that displays live simulated market data generated b
 
 ## Links
 
-- Repository: TODO
+- Repository: https://github.com/dimka388/realtime-fintech-dashboard
 - Live demo: TODO
 
 Replace these placeholders after publishing the repository and deployment.
