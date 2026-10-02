@@ -5,9 +5,7 @@ A small Angular application that displays live simulated market data generated b
 ## Links
 
 - Repository: https://github.com/dimka388/realtime-fintech-dashboard
-- Live demo: TODO
-
-Replace these placeholders after publishing the repository and deployment.
+- Live demo: https://realtime-fintech-dashboard.pages.dev/
 
 ## Features
 
@@ -157,7 +155,7 @@ All commands and worker events include this identifier. The Angular service igno
 
 ## Prerequisites
 
-- Node.js 24
+- Node.js 24.15.0 or newer compatible release
 - npm
 
 No global Angular CLI or AssemblyScript installation is required.
