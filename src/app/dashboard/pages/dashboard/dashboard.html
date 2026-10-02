@@ -1,0 +1,161 @@
+<section class="dashboard">
+  <header class="dashboard__header">
+    <div>
+      <p class="dashboard__eyebrow">
+        Live market
+      </p>
+
+      <h2>Market dashboard</h2>
+
+      <p class="dashboard__description">
+        Cumulative metrics for the current producer run.
+      </p>
+    </div>
+
+    <div class="producer-controls">
+      <div
+        class="producer-status"
+        [class.producer-status--running]="
+          producer.status() === 'running'
+        "
+        [class.producer-status--paused]="
+          producer.status() === 'paused'
+        "
+        [class.producer-status--error]="
+          producer.status() === 'error'
+        "
+        role="status"
+        aria-live="polite"
+      >
+        <span
+          class="producer-status__indicator"
+          aria-hidden="true"
+        ></span>
+
+        {{ statusLabel() }}
+      </div>
+
+      <button
+        type="button"
+        class="control-button"
+        [disabled]="!canTogglePause()"
+        (click)="producer.togglePause()"
+      >
+        @if (producer.status() === 'paused') {
+          Resume
+        } @else {
+          Pause
+        }
+      </button>
+    </div>
+  </header>
+
+  @if (producer.error(); as errorMessage) {
+    <div class="error-panel" role="alert">
+      <div>
+        <strong>Producer initialization failed</strong>
+        <p>{{ errorMessage }}</p>
+      </div>
+
+      <button
+        type="button"
+        class="retry-button"
+        (click)="retry()"
+      >
+        Retry
+      </button>
+    </div>
+  }
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th scope="col">Instrument</th>
+          <th scope="col">Last price</th>
+          <th scope="col">Bid–ask spread</th>
+          <th scope="col">Volume</th>
+          <th scope="col">VWAP</th>
+          <th scope="col">Imbalance</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        @for (
+          metric of producer.metrics();
+          track metric.instrument
+        ) {
+          <tr>
+            <th scope="row">
+              {{ metric.instrument }}
+            </th>
+
+            <td>
+              {{
+                metric.lastPriceCents
+                  | centsCurrency
+              }}
+            </td>
+
+            <td>
+              {{
+                metric.spreadCents
+                  | centsCurrency
+              }}
+            </td>
+
+            <td>
+              {{
+                metric.volume
+                  | number: '1.0-0'
+              }}
+            </td>
+
+            <td>
+              {{
+                metric.vwapCents
+                  | centsCurrency
+              }}
+            </td>
+
+            <td
+              [class.positive]="
+                metric.imbalance !== null &&
+                metric.imbalance > 0
+              "
+              [class.negative]="
+                metric.imbalance !== null &&
+                metric.imbalance < 0
+              "
+            >
+              {{
+                metric.imbalance
+                  | imbalance
+              }}
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td
+              class="empty-state"
+              colspan="6"
+            >
+              @if (
+                producer.status() === 'error'
+              ) {
+                Market data is unavailable.
+              } @else {
+                Initializing market producer…
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+
+  <p class="dashboard__note">
+    Volume and VWAP include every trade generated
+    during the current run.
+  </p>
+</section>

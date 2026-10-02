@@ -1,0 +1,22 @@
+{
+  "targets": {
+    "debug": {
+      "outFile": "public/wasm/producer.wasm",
+      "textFile": "build/producer.debug.wat",
+      "sourceMap": true,
+      "debug": true
+    },
+    "release": {
+      "outFile": "public/wasm/producer.wasm",
+      "textFile": "build/producer.release.wat",
+      "sourceMap": false,
+      "optimizeLevel": 3,
+      "shrinkLevel": 1,
+      "converge": true,
+      "noAssert": false
+    }
+  },
+  "options": {
+    "bindings": "esm"
+  }
+}

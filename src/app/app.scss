@@ -1,0 +1,60 @@
+:host {
+  display: block;
+  min-height: 100vh;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  padding: 1rem max(1.25rem, calc((100% - 75rem) / 2));
+  border-bottom: 1px solid #e4e7ec;
+  background: #fff;
+}
+
+h1 {
+  margin: 0;
+  font-size: 1.125rem;
+}
+
+nav {
+  display: flex;
+  gap: 0.4rem;
+
+  a {
+    padding: 0.55rem 0.75rem;
+    border-radius: 0.45rem;
+    color: #475467;
+    font-weight: 600;
+    text-decoration: none;
+
+    &:hover {
+      color: #1d4ed8;
+      background: #eff6ff;
+    }
+
+    &.active {
+      color: #1d4ed8;
+      background: #dbeafe;
+    }
+  }
+}
+
+main {
+  width: min(75rem, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 2rem 0;
+}
+
+@media (max-width: 600px) {
+  header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  main {
+    padding-top: 1.25rem;
+  }
+}

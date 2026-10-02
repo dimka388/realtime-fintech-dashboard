@@ -1,0 +1,277 @@
+<section class="settings">
+  <header class="settings__header">
+    <div>
+      <p class="settings__eyebrow">
+        Data producer
+      </p>
+
+      <h2>Producer settings</h2>
+
+      <p class="settings__description">
+        Changes remain local until you apply them.
+        Applying settings starts a new run and clears
+        the current market metrics.
+      </p>
+    </div>
+
+    <div class="active-status">
+      <span>Producer status</span>
+      <strong>{{ producer.status() }}</strong>
+    </div>
+  </header>
+
+  <div class="settings-layout">
+    <form
+      class="settings-form"
+      [formGroup]="form"
+      (ngSubmit)="applySettings()"
+      novalidate
+    >
+      <div class="field">
+        <label for="instrument-count">
+          Instrument count
+        </label>
+
+        <input
+          id="instrument-count"
+          type="number"
+          min="1"
+          max="50"
+          step="1"
+          inputmode="numeric"
+          formControlName="instrumentCount"
+          aria-describedby="instrument-count-help instrument-count-error"
+        />
+
+        <p
+          id="instrument-count-help"
+          class="field__help"
+        >
+          Number of fictional instruments.
+          Allowed range: 1–50.
+        </p>
+
+        @if (
+          form.controls.instrumentCount.touched &&
+          form.controls.instrumentCount.invalid
+        ) {
+          <p
+            id="instrument-count-error"
+            class="field__error"
+            role="alert"
+          >
+            @if (
+              form.controls.instrumentCount.hasError(
+                'required'
+              )
+            ) {
+              Instrument count is required.
+            } @else if (
+              form.controls.instrumentCount.hasError(
+                'integer'
+              )
+            ) {
+              Instrument count must be an integer.
+            } @else {
+              Enter a value between 1 and 50.
+            }
+          </p>
+        }
+      </div>
+
+      <div class="field">
+        <label for="updates-per-batch">
+          Updates per batch
+        </label>
+
+        <input
+          id="updates-per-batch"
+          type="number"
+          min="1"
+          max="1000"
+          step="1"
+          inputmode="numeric"
+          formControlName="updatesPerBatch"
+          aria-describedby="updates-per-batch-help updates-per-batch-error"
+        />
+
+        <p
+          id="updates-per-batch-help"
+          class="field__help"
+        >
+          Total updates across all instruments.
+          Allowed range: 1–1,000.
+        </p>
+
+        @if (
+          form.controls.updatesPerBatch.touched &&
+          form.controls.updatesPerBatch.invalid
+        ) {
+          <p
+            id="updates-per-batch-error"
+            class="field__error"
+            role="alert"
+          >
+            @if (
+              form.controls.updatesPerBatch.hasError(
+                'required'
+              )
+            ) {
+              Updates per batch is required.
+            } @else if (
+              form.controls.updatesPerBatch.hasError(
+                'integer'
+              )
+            ) {
+              Updates per batch must be an integer.
+            } @else {
+              Enter a value between 1 and 1,000.
+            }
+          </p>
+        }
+      </div>
+
+      <div class="field">
+        <label for="batch-interval">
+          Batch interval
+        </label>
+
+        <div class="input-with-suffix">
+          <input
+            id="batch-interval"
+            type="number"
+            min="50"
+            max="2000"
+            step="1"
+            inputmode="numeric"
+            formControlName="batchIntervalMs"
+            aria-describedby="batch-interval-help batch-interval-error"
+          />
+
+          <span>ms</span>
+        </div>
+
+        <p
+          id="batch-interval-help"
+          class="field__help"
+        >
+          Requested delay between batches.
+          Allowed range: 50–2,000 ms.
+        </p>
+
+        @if (
+          form.controls.batchIntervalMs.touched &&
+          form.controls.batchIntervalMs.invalid
+        ) {
+          <p
+            id="batch-interval-error"
+            class="field__error"
+            role="alert"
+          >
+            @if (
+              form.controls.batchIntervalMs.hasError(
+                'required'
+              )
+            ) {
+              Batch interval is required.
+            } @else if (
+              form.controls.batchIntervalMs.hasError(
+                'integer'
+              )
+            ) {
+              Batch interval must be an integer.
+            } @else {
+              Enter a value between 50 and 2,000 ms.
+            }
+          </p>
+        }
+      </div>
+
+      <div class="rate-preview">
+        <span>Nominal update rate</span>
+
+        @if (
+          nominalUpdateRate();
+          as updateRate
+        ) {
+          <strong>
+            {{
+              updateRate
+                | number: '1.0-2'
+            }}
+            updates/second
+          </strong>
+
+          <small>
+            Across all instruments, not per instrument.
+          </small>
+        } @else {
+          <strong>Unavailable</strong>
+        }
+      </div>
+
+      <div class="form-actions">
+        <button
+          type="submit"
+          class="apply-button"
+          [disabled]="form.invalid"
+        >
+          Apply settings
+        </button>
+
+        <p>
+          Applying starts a new running producer
+          and clears current totals.
+        </p>
+      </div>
+    </form>
+
+    <aside class="active-settings">
+      <h3>Active run</h3>
+
+      <dl>
+        <div>
+          <dt>Instruments</dt>
+          <dd>
+            {{
+              producer.settings()
+                .instrumentCount
+            }}
+          </dd>
+        </div>
+
+        <div>
+          <dt>Updates per batch</dt>
+          <dd>
+            {{
+              producer.settings()
+                .updatesPerBatch
+            }}
+          </dd>
+        </div>
+
+        <div>
+          <dt>Batch interval</dt>
+          <dd>
+            {{
+              producer.settings()
+                .batchIntervalMs
+            }}
+            ms
+          </dd>
+        </div>
+      </dl>
+
+      @if (form.dirty) {
+        <p class="unsaved-note">
+          The form contains unapplied changes.
+        </p>
+      } @else {
+        <p class="saved-note">
+          The form matches the most recently
+          applied settings.
+        </p>
+      }
+    </aside>
+  </div>
+</section>
