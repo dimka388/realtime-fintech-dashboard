@@ -15,9 +15,9 @@ let randomState: u32 = 1;
 let prices = new Int32Array(0);
 
 /**
- * Xorshift32 — небольшой детерминированный PRNG.
+ * Xorshift32 is a small deterministic PRNG.
  *
- * Один и тот же seed создаёт одну и ту же последовательность.
+ * The same seed produces the same sequence.
  */
 function nextRandom(): u32 {
   let value = randomState;
@@ -43,9 +43,9 @@ function randomInteger(
 }
 
 /**
- * Создаёт новый run генератора.
+ * Starts a new generator run.
  *
- * Повторный вызов очищает состояние предыдущего run.
+ * Calling initialize again clears the previous run state.
  */
 export function initialize(
   newInstrumentCount: i32,
@@ -59,7 +59,7 @@ export function initialize(
 
   instrumentCount = newInstrumentCount;
 
-  // Xorshift не должен начинать с нулевого состояния.
+  // Xorshift must not start from a zero state.
   randomState = seed == 0 ? 0x6d2b79f5 : seed;
 
   prices = new Int32Array(instrumentCount);
@@ -72,14 +72,14 @@ export function initialize(
 }
 
 /**
- * Количество числовых полей в одном событии.
+ * Number of numeric fields in one update.
  */
 export function updateFieldCount(): i32 {
   return UPDATE_FIELD_COUNT;
 }
 
 /**
- * Генерирует заданное количество рыночных событий.
+ * Generates the requested number of market updates.
  */
 export function generateBatch(
   updateCount: i32,
@@ -113,7 +113,7 @@ export function generateBatch(
 
     const previousPrice = prices[instrumentIndex];
 
-    // Цена эволюционирует от предыдущего значения.
+    // Evolve the price from its previous value.
     const priceMovement = randomInteger(-5, 5);
 
     let referencePrice = previousPrice + priceMovement;
@@ -133,7 +133,7 @@ export function generateBatch(
 
     const askCents = bidCents + spread;
 
-    // Цена сделки обязательно равна bid или ask.
+    // The trade must execute at either the bid or the ask.
     const priceCents =
       randomInteger(0, 1) == 0
         ? bidCents
@@ -143,7 +143,7 @@ export function generateBatch(
     const bidQuantity = randomInteger(0, 1_000);
     const askQuantity = randomInteger(0, 1_000);
 
-    // Следующее событие этого инструмента продолжит эту цену.
+    // The next update for this instrument continues from this price.
     prices[instrumentIndex] = priceCents;
 
     result[outputIndex++] = instrumentIndex;

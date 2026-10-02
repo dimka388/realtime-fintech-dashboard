@@ -136,6 +136,8 @@ All settings must be integers.
 
 Editing the form does not change the active producer. Apply starts a new run, clears the old metrics, and resumes generation if the previous run was paused.
 
+Settings are stored in memory only. Reloading the page resets the form and starts the producer with the default values listed above.
+
 ## Performance
 
 At the maximum configuration, the producer may generate:

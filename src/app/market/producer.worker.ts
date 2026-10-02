@@ -9,15 +9,13 @@ import {
   ProducerWorkerCommand,
   ProducerWorkerEvent,
 } from './models/producer.models';
+import { ProducerTimer } from './producer-timer';
+import { RetryableLoader } from './retryable-loader';
 
 type WasmProducerModule =
   typeof import('../../../public/wasm/producer.js');
 
 const UI_SNAPSHOT_INTERVAL_MS = 100;
-
-let producerModulePromise:
-  | Promise<WasmProducerModule>
-  | null = null;
 
 let producerModule: WasmProducerModule | null = null;
 let aggregator: MarketMetricsAggregator | null = null;
@@ -26,8 +24,27 @@ let activeSettings: ProducerSettings | null = null;
 
 let activeRunId = 0;
 let running = false;
-let timerId: number | null = null;
 let lastSnapshotTime = 0;
+
+const producerTimer = new ProducerTimer();
+
+const producerModuleLoader =
+  new RetryableLoader<WasmProducerModule>(() => {
+    /*
+     * producer.js and producer.wasm are served together from
+     * public/wasm. Keeping the URL in a variable makes this a
+     * runtime import inside the worker.
+     */
+    const moduleUrl = new URL(
+      'wasm/producer.js',
+      self.location.href,
+    ).href;
+
+    return import(
+      /* @vite-ignore */
+      moduleUrl
+    ) as Promise<WasmProducerModule>;
+  });
 
 function postWorkerEvent(event: ProducerWorkerEvent): void {
   postMessage(event);
@@ -45,10 +62,7 @@ function postStatus(
 }
 
 function stopTimer(): void {
-  if (timerId !== null) {
-    clearTimeout(timerId);
-    timerId = null;
-  }
+  producerTimer.cancel();
 }
 
 function validateSettings(
@@ -94,24 +108,7 @@ function createSeed(): number {
 }
 
 function loadProducerModule(): Promise<WasmProducerModule> {
-  if (producerModulePromise === null) {
-    /*
-     * producer.js и producer.wasm находятся рядом в public/wasm.
-     * Переменная URL оставляет import динамическим: файл загружается
-     * браузером во время выполнения worker.
-     */
-    const moduleUrl = new URL(
-      'wasm/producer.js',
-      self.location.href,
-    ).href;
-
-    producerModulePromise = import(
-      /* @vite-ignore */
-      moduleUrl
-    ) as Promise<WasmProducerModule>;
-  }
-
-  return producerModulePromise;
+  return producerModuleLoader.get();
 }
 
 function emitSnapshot(runId: number): void {
@@ -178,10 +175,7 @@ function produceNextBatch(runId: number): void {
       instruments,
     );
 
-    /*
-     * Каждый update учитывается, даже если snapshot
-     * не отправляется в UI после каждого batch.
-     */
+    // Every update is aggregated even when the UI is throttled.
     aggregator.processBatch(updates);
 
     const currentTime = performance.now();
@@ -193,7 +187,7 @@ function produceNextBatch(runId: number): void {
       emitSnapshot(runId);
     }
 
-    timerId = setTimeout(
+    producerTimer.schedule(
       () => produceNextBatch(runId),
       activeSettings.batchIntervalMs,
     );
@@ -205,7 +199,7 @@ function produceNextBatch(runId: number): void {
 function scheduleNextBatch(runId: number): void {
   stopTimer();
 
-  timerId = setTimeout(
+  producerTimer.schedule(
     () => produceNextBatch(runId),
     0,
   );
@@ -234,10 +228,7 @@ async function startProducer(
 
     const loadedModule = await loadProducerModule();
 
-    /*
-     * Пока Wasm загружался, мог прийти новый start.
-     * Старый run не должен продолжать инициализацию.
-     */
+    // A newer run may have started while the Wasm module loaded.
     if (command.runId !== activeRunId) {
       return;
     }
@@ -257,7 +248,7 @@ async function startProducer(
       instruments,
     );
 
-    // UI сразу получает строки с недоступными значениями.
+    // Render every instrument before its first update arrives.
     emitSnapshot(command.runId);
 
     if (running) {
@@ -279,7 +270,7 @@ function pauseProducer(runId: number): void {
   running = false;
   stopTimer();
 
-  // Отправляем последнее полностью обработанное состояние.
+  // Publish the last fully processed state before pausing.
   emitSnapshot(runId);
   postStatus(runId, 'paused');
 }
@@ -291,10 +282,7 @@ function resumeProducer(runId: number): void {
 
   running = true;
 
-  /*
-   * Если Wasm ещё загружается, startProducer сам увидит
-   * running === true после окончания инициализации.
-   */
+  // startProducer schedules the batch after an in-progress load.
   if (
     producerModule === null ||
     aggregator === null

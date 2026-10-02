@@ -1,49 +1,48 @@
 /**
- * Одно сгенерированное рыночное событие.
+ * One generated market update.
  *
- * Каждое событие содержит одну совершённую сделку
- * и актуальный снимок bid/ask.
+ * Each update contains one completed trade and the latest bid/ask snapshot.
  */
 export interface MarketUpdate {
   readonly instrument: string;
 
   /**
-   * Цена сделки в центах.
+   * Trade price in cents.
    *
-   * Например, 10_200 означает $102.00.
+   * For example, 10_200 means $102.00.
    */
   readonly priceCents: number;
 
   /**
-   * Количество единиц в совершённой сделке.
+   * Number of units in the completed trade.
    */
   readonly tradeQuantity: number;
 
   /**
-   * Текущая доступная цена покупки в центах.
+   * Current bid price in cents.
    */
   readonly bidCents: number;
 
   /**
-   * Текущая доступная цена продажи в центах.
+   * Current ask price in cents.
    */
   readonly askCents: number;
 
   /**
-   * Доступное количество по цене bid.
+   * Available quantity at the bid price.
    */
   readonly bidQuantity: number;
 
   /**
-   * Доступное количество по цене ask.
+   * Available quantity at the ask price.
    */
   readonly askQuantity: number;
 }
 
 /**
- * Рассчитанные показатели одного инструмента.
+ * Calculated metrics for one instrument.
  *
- * null означает, что показатель пока невозможно рассчитать.
+ * null means that a metric cannot be calculated yet.
  */
 export interface InstrumentMetrics {
   readonly instrument: string;

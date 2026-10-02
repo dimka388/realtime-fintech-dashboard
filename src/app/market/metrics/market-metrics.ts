@@ -76,9 +76,9 @@ function calculateMetrics(
 }
 
 /**
- * Хранит только накопленные значения.
+ * Stores only the accumulated values.
  *
- * Полная история MarketUpdate не сохраняется.
+ * The complete MarketUpdate history is intentionally not retained.
  */
 export class MarketMetricsAggregator {
   private readonly accumulators =
@@ -89,7 +89,7 @@ export class MarketMetricsAggregator {
   }
 
   /**
-   * Учитывает одно рыночное событие.
+   * Processes one market update.
    */
   process(update: MarketUpdate): void {
     const accumulator = this.accumulators.get(update.instrument);
@@ -112,7 +112,7 @@ export class MarketMetricsAggregator {
   }
 
   /**
-   * Учитывает пакет событий.
+   * Processes a batch of market updates.
    */
   processBatch(updates: readonly MarketUpdate[]): void {
     for (const update of updates) {
@@ -121,7 +121,7 @@ export class MarketMetricsAggregator {
   }
 
   /**
-   * Возвращает текущее состояние всех инструментов.
+   * Returns the current metrics for every instrument.
    */
   getSnapshot(): InstrumentMetrics[] {
     return Array.from(
@@ -131,7 +131,7 @@ export class MarketMetricsAggregator {
   }
 
   /**
-   * Полностью очищает предыдущий run.
+   * Clears all state from the previous run.
    */
   reset(instruments: readonly string[]): void {
     this.accumulators.clear();

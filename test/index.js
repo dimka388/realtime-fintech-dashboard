@@ -125,8 +125,8 @@ describe('AssemblyScript market producer', () => {
         batch[offset + PRICE_CENTS];
 
       /*
-       * Генератор изменяет reference price максимум на 5 центов,
-       * bid offset — максимум на 4, spread — максимум на 10.
+       * The reference price moves by at most 5 cents, the bid offset
+       * is at most 4 cents, and the spread is at most 10 cents.
        */
       assert.ok(
         Math.abs(currentPrice - previousPrice) <= 15,

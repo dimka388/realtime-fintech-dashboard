@@ -93,7 +93,7 @@ export class ProducerClientService
   }
 
   /**
-   * Начинает новый run и очищает предыдущие результаты.
+   * Starts a new run and clears the previous results.
    */
   apply(
     settings: ProducerSettings,
@@ -186,9 +186,7 @@ export class ProducerClientService
   private handleWorkerEvent(
     event: ProducerWorkerEvent,
   ): void {
-    /*
-     * Поздние сообщения предыдущего run игнорируются.
-     */
+    // Ignore late events from a previous run.
     if (event.runId !== this.activeRunId) {
       return;
     }

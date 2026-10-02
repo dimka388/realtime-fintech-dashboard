@@ -9,9 +9,7 @@ export const integerValidator: ValidatorFn = (
 ): ValidationErrors | null => {
   const value: unknown = control.value;
 
-  /*
-   * Пустое значение проверяет Validators.required.
-   */
+  // Empty values are handled by Validators.required.
   if (value === null || value === '') {
     return null;
   }
